@@ -3,8 +3,8 @@ import ReactPlayer from 'react-player';
 /**
  * ? Local & Shared Imports
  */
-import {TrailerStatus} from '../hooks/useMovieTrailer';
 import Modal from './Modal';
+import {TrailerStatus} from '../hooks/useMovieTrailer';
 
 const YoutubePlayer = ({status, closeTrailer, videoKey}) => {
 	if (status === TrailerStatus.IDLE) return null;

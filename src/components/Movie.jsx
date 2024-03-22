@@ -1,21 +1,29 @@
 import {useDispatch, useSelector} from 'react-redux';
+
+/**
+ * ? Local & Shared Imports
+ */
 import starredSlice from '../data/starredSlice';
 import watchLaterSlice from '../data/watchLaterSlice';
+import {starredMovies, watchLaterMovies} from '../data/selectors';
+
 import placeholder from '../assets/not-found-500X750.jpeg';
 
-const Movie = ({movie, viewTrailer, closeCard}) => {
-	const state = useSelector((state) => state);
-	const {starred, watchLater} = state;
+const Movie = ({movie, viewTrailer}) => {
+	const starred = useSelector(starredMovies);
+	const watchLater = useSelector(watchLaterMovies);
 	const {starMovie, unstarMovie} = starredSlice.actions;
 	const {addToWatchLater, removeFromWatchLater} = watchLaterSlice.actions;
 
 	const dispatch = useDispatch();
 
-	const myClickHandler = (e) => {
-		if (!e) var e = window.event;
-		e.cancelBubble = true;
-		if (e.stopPropagation) e.stopPropagation();
-		e.target.parentElement.parentElement.classList.remove('opened');
+	const myClickHandler = (event) => {
+		event.stopPropagation();
+		const target = event.currentTarget;
+		const parentElement = target.parentElement?.parentElement;
+		if (parentElement) {
+			parentElement.classList.remove('opened');
+		}
 	};
 
 	return (
@@ -29,9 +37,7 @@ const Movie = ({movie, viewTrailer, closeCard}) => {
 					<div className='info_panel'>
 						<div className='overview'>{movie.overview}</div>
 						<div className='year'>{movie.release_date?.substring(0, 4)}</div>
-						{!starred.starredMovies
-							.map((movie) => movie.id)
-							.includes(movie.id) ? (
+						{!starred.map((movie) => movie.id).includes(movie.id) ? (
 							<span
 								className='btn-star'
 								data-testid='starred-link'
@@ -58,9 +64,7 @@ const Movie = ({movie, viewTrailer, closeCard}) => {
 								<i className='bi bi-star-fill' data-testid='star-fill' />
 							</span>
 						)}
-						{!watchLater.watchLaterMovies
-							.map((movie) => movie.id)
-							.includes(movie.id) ? (
+						{!watchLater.map((movie) => movie.id).includes(movie.id) ? (
 							<button
 								type='button'
 								data-testid='watch-later'
@@ -112,7 +116,7 @@ const Movie = ({movie, viewTrailer, closeCard}) => {
 				<button
 					type='button'
 					className='close'
-					onClick={(e) => myClickHandler(e)}
+					onClick={myClickHandler}
 					aria-label='Close'
 				>
 					<span aria-hidden='true'>&times;</span>
