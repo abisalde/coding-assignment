@@ -1,19 +1,25 @@
+import {useSelector} from 'react-redux';
+/**
+ * >? Local & Shared Imports
+ */
 import Movie from './Movie';
+
+import {movies} from '../data/selectors';
+import {useFetchMovies} from '../hooks/useFetchMovies';
+
 import '../styles/movies.scss';
 
-const Movies = ({movies, viewTrailer, closeCard}) => {
+const Movies = ({viewTrailer}) => {
+	const {intersectionTargetRef} = useFetchMovies();
+
+	const movieLists = useSelector(movies);
+
 	return (
 		<div data-testid='movies' className='movie_grid_wrapper'>
-			{movies.movies.results?.map((movie) => {
-				return (
-					<Movie
-						movie={movie}
-						key={movie.id}
-						viewTrailer={viewTrailer}
-						closeCard={closeCard}
-					/>
-				);
+			{movieLists?.map((movie) => {
+				return <Movie movie={movie} key={movie.id} viewTrailer={viewTrailer} />;
 			})}
+			<div ref={intersectionTargetRef}></div>
 		</div>
 	);
 };

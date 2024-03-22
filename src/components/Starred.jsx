@@ -1,22 +1,27 @@
 import {useSelector, useDispatch} from 'react-redux';
 import {Link} from 'react-router-dom';
+
+/**
+ * ? Local & Shared Imports
+ */
 import starredSlice from '../data/starredSlice';
+import {starredMovies} from '../data/selectors';
 import Movie from './Movie';
+
 import '../styles/starred.scss';
 
 const Starred = ({viewTrailer}) => {
-	const state = useSelector((state) => state);
-	const {starred} = state;
+	const starred = useSelector(starredMovies);
 	const {clearAllStarred} = starredSlice.actions;
 	const dispatch = useDispatch();
 
 	return (
 		<div className='starred' data-testid='starred'>
-			{starred.starredMovies.length > 0 && (
+			{starred.length > 0 && (
 				<div data-testid='starred-movies' className='starred-movies'>
 					<h6 className='header'>Starred movies</h6>
 					<div className='movie_grid_wrapper'>
-						{starred.starredMovies.map((movie) => (
+						{starred.map((movie) => (
 							<Movie movie={movie} key={movie.id} viewTrailer={viewTrailer} />
 						))}
 					</div>
@@ -32,7 +37,7 @@ const Starred = ({viewTrailer}) => {
 				</div>
 			)}
 
-			{starred.starredMovies.length === 0 && (
+			{starred.length === 0 && (
 				<div className='text-center empty-cart'>
 					<i className='bi bi-star' />
 					<p>There are no starred movies.</p>
