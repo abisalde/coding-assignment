@@ -1,5 +1,5 @@
-import {useCallback} from 'react';
-import {useDispatch} from 'react-redux';
+import {useCallback, useEffect, useRef} from 'react';
+import {useDispatch, useSelector} from 'react-redux';
 import {useSearchParams, createSearchParams} from 'react-router-dom';
 
 /**
@@ -7,19 +7,24 @@ import {useSearchParams, createSearchParams} from 'react-router-dom';
  */
 
 import {ENDPOINT_DISCOVER, ENDPOINT_SEARCH} from '../constants';
+
 import {fetchMovies} from '../data/moviesSlice';
+import {hasNext, page} from '../data/selectors';
 
 /**
  *
- * @returns  {fetchMoviesWithQuery, searchMovies }
+ * @returns  {fetchMoviesWithQuery, searchMovies, intersectionTargetRef }
  *  @function fetchMoviesWithQuery
  *  @function searchMovies
  */
 
 export const useFetchMovies = () => {
 	const dispatch = useDispatch();
+	const hasNextPage = useSelector(hasNext);
+	const pageCount = useSelector(page);
 
-	const [, setSearchParams] = useSearchParams();
+	const [searchParams, setSearchParams] = useSearchParams();
+	const searchQuery = searchParams.get('search');
 
 	const fetchMoviesWithQuery = useCallback(
 		(query = '', page = 1) => {
@@ -46,9 +51,50 @@ export const useFetchMovies = () => {
 		[fetchMoviesWithQuery]
 	);
 
+	const observerRef = useRef(null);
+	const intersectionTargetRef = useRef(null);
+
+	const loadMoreMovies = useCallback(
+		(node) => {
+			let query;
+
+			if (node && node[0].isIntersecting && hasNextPage) {
+				if (searchQuery) {
+					query = searchQuery;
+				} else {
+					query = '';
+				}
+				fetchMoviesWithQuery(query, pageCount + 1);
+				observerRef.current?.disconnect();
+			}
+		},
+		[hasNextPage, fetchMoviesWithQuery, pageCount, searchQuery]
+	);
+
+	useEffect(() => {
+		fetchMoviesWithQuery();
+	}, []);
+
+	useEffect(() => {
+		observerRef.current = new IntersectionObserver(loadMoreMovies, {
+			threshold: 1.0,
+			root: null,
+			rootMargin: '10px',
+		});
+		if (observerRef.current && intersectionTargetRef.current) {
+			observerRef.current?.observe(intersectionTargetRef.current);
+		}
+		return () => {
+			if (observerRef.current) {
+				observerRef.current?.disconnect();
+			}
+		};
+	}, [loadMoreMovies]);
+
 	return {
 		fetchMoviesWithQuery,
 		searchMovies,
+		intersectionTargetRef,
 	};
 };
 
